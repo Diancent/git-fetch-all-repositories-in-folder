@@ -37,7 +37,7 @@ void processFolder(const string& folderPath, vector<string>& repositories) {
 int main() {
     setlocale(LC_ALL, "ua");
 
-    string folderPath = "/Users/artemkorolcuk/Documents/repo";
+    string folderPath = "/Users/User/Documents/repo";
 
     if(!filesystem::exists(folderPath)){
         cerr << "Помилка: неможливо відкрити папку " << folderPath << endl;
