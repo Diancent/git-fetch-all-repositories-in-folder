@@ -52,15 +52,6 @@ int main() {
         cout << repo << endl;
     }
 
-//    vector<thread> threads;
-//    for (const auto& repo : repositories) {
-//        threads.emplace_back(fetchRepository, repo);
-//    }
-//
-//    for (auto& thread : threads) {
-//        thread.join();
-//    }
-
     for (const auto& repo : repositories) {
         pid_t pid = fork();
 
