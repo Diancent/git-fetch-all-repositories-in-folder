@@ -1,13 +1,35 @@
 #include <iostream>
 #include <fstream>
-#include <thread>
 #include <vector>
+
+#ifdef _WIN32
+#include <windows.h>
+#include <filesystem>
+#include <tchar.h>
+#else
 #include <sys/wait.h>
 #include <unistd.h>
-
+#endif
 using namespace std;
 
 void fetchRepository(const string& repoPath){
+    #ifdef _WIN32
+    STARTUPINFO si = { sizeof(STARTUPINFO) };
+    PROCESS_INFORMATION pi;
+
+    cout << "ID процесу: " << GetCurrentProcessId() << endl;
+
+    string command = "git fetch origin";
+    if (CreateProcess(NULL, const_cast<LPSTR>(command.c_str()), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+
+        cout << "Репозиторій в папці " << repoPath << " успішно оновлений." << endl;
+    } else {
+        cerr << "Не вдалось створити процес для репозиторію " << repoPath << endl;
+    }
+    #else
     cout << "ID процесу: " << getpid() << endl;
 
     filesystem::current_path(repoPath);
@@ -21,7 +43,7 @@ void fetchRepository(const string& repoPath){
     } else {
         cout << "Не вдалось оновити репозиторій " << repoPath << endl;
     }
-
+    #endif
 }
 
 void processFolder(const string& folderPath, vector<string>& repositories) {
@@ -52,15 +74,14 @@ int main() {
         cout << repo << endl;
     }
 
-//    vector<thread> threads;
-//    for (const auto& repo : repositories) {
-//        threads.emplace_back(fetchRepository, repo);
-//    }
-//
-//    for (auto& thread : threads) {
-//        thread.join();
-//    }
+#ifdef _WIN32
+    // Code for Windows
+    for (const auto& repo : repositories) {
+        fetchRepository(repo);
+    }
 
+#else
+    // Code for UNIX systems
     for (const auto& repo : repositories) {
         pid_t pid = fork();
 
@@ -75,5 +96,7 @@ int main() {
 
     int status;
     while (wait(&status) > 0);
+#endif
+
     return 0;
 }
